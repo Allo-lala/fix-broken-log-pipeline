@@ -1,0 +1,9 @@
+instruction: |
+  Your goal is to build a Bash ETL pipeline that parses `sample.log`,
+  extracts timestamp, level, and message fields,
+  and saves the result as a JSON array in `clean.json`.
+author_email: kyagulanyi.allan@example.com
+difficulty: medium
+tags: [bash, logs, etl]
+max_agent_timeout_sec: 180
+max_test_timeout_sec: 30
