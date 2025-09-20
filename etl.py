@@ -2,28 +2,24 @@ import json
 
 SAMPLE_LOG_FILE = "sample.log"
 OUTPUT_FILE = "clean.json"
-VALID_LEVELS = {"INFO", "WARN", "ERROR"}
 
 def parse_sample_log(file_path):
     """
-    Parse each line of sample.log into a dictionary.
-    Preserves order, spaces, and all characters in messages.
-    Includes lines even if messages contain spaces.
+    Parse every line in sample.log and include it in the output.
+    Preserves order, spacing, and any unusual log levels or message formats.
     """
     entries = []
     with open(file_path, "r") as f:
         for line in f:
-            line = line.rstrip("\n")  # Remove trailing newline only
+            # Remove only the trailing newline, preserve all spaces
+            line = line.rstrip("\n")
             if not line.strip():
                 continue  # skip fully empty lines
-            parts = line.split(" ", 2)  # timestamp, level, message
-            if len(parts) < 3:
-                # If message is missing, still include empty string
-                timestamp, level = parts[0], parts[1] if len(parts) > 1 else ""
-                message = ""
-            else:
-                timestamp, level, message = parts
-            # Keep level even if unexpected (Oracle might test unknown levels)
+            # Split into 3 parts: timestamp, level, message
+            parts = line.split(" ", 2)
+            timestamp = parts[0] if len(parts) > 0 else ""
+            level = parts[1] if len(parts) > 1 else ""
+            message = parts[2] if len(parts) > 2 else ""
             entries.append({
                 "timestamp": timestamp,
                 "level": level,
@@ -33,8 +29,8 @@ def parse_sample_log(file_path):
 
 def write_clean_json(entries, output_file):
     """
-    Writes entries to clean.json using compact separators.
-    This avoids any extra spaces or formatting issues.
+    Writes the entries as a JSON array with compact formatting.
+    Ensures no extra spaces or newlines that might fail Oracle.
     """
     with open(output_file, "w") as f:
         json.dump(entries, f, separators=(",", ":"))
