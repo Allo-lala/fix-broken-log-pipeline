@@ -1,8 +1,16 @@
-FROM ubuntu:22.04
+# FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y \
-    bash coreutils findutils python3 python3-pip \ && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     bash coreutils findutils python3 python3-pip \ && rm -rf /var/lib/apt/lists/*
+
+# WORKDIR /app
+# COPY solution.sh /app/solution.sh
+# RUN chmod +x /app/solution.sh
+
+FROM python:3.12-slim
 
 WORKDIR /app
-COPY solution.sh /app/solution.sh
-RUN chmod +x /app/solution.sh
+COPY . /app
+
+RUN apt-get update && apt-get install -y \
+    && rm -rf /var/lib/apt/lists/*
