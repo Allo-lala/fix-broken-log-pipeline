@@ -2,8 +2,29 @@ import json
 import os
 import pytest
 
+SAMPLE_LOG_FILE = "sample.log"
+
+def parse_sample_log():
+    """Helper: parse sample.log to know expected fields and levels."""
+    expected_entries = []
+    with open(SAMPLE_LOG_FILE) as f:
+        for line in f:
+            # Assuming log format: "timestamp level message"
+            parts = line.strip().split(" ", 2)
+            if len(parts) != 3:
+                continue
+            timestamp, level, message = parts
+            expected_entries.append({
+                "timestamp": timestamp,
+                "level": level,
+                "message": message
+            })
+    return expected_entries
+
+
 def test_output_file_created():
     assert os.path.exists("clean.json"), "clean.json was not created"
+
 
 def test_clean_json_is_valid_json():
     with open("clean.json") as f:
@@ -12,10 +33,12 @@ def test_clean_json_is_valid_json():
         except json.JSONDecodeError:
             pytest.fail("clean.json is not valid JSON")
 
+
 def test_clean_json_is_list():
     with open("clean.json") as f:
         data = json.load(f)
     assert isinstance(data, list), "clean.json must contain a list"
+
 
 def test_each_entry_has_fields():
     with open("clean.json") as f:
@@ -25,14 +48,31 @@ def test_each_entry_has_fields():
         assert "level" in entry, "Each entry must have level"
         assert "message" in entry, "Each entry must have message"
 
+
 def test_levels_are_valid():
     valid_levels = {"INFO", "WARN", "ERROR"}
     with open("clean.json") as f:
         data = json.load(f)
     for entry in data:
-        assert entry["level"] in valid_levels
+        assert entry["level"] in valid_levels, f"Invalid level {entry['level']}"
 
-def test_number_of_records():
+
+def test_number_of_records_matches_sample():
+    """Ensure all records from sample.log are in clean.json."""
+    expected = parse_sample_log()
     with open("clean.json") as f:
-        data = json.load(f)
-    assert len(data) >= 1, "At least one record must be present"
+        actual = json.load(f)
+    assert len(actual) == len(expected), (
+        f"Expected {len(expected)} records but found {len(actual)}"
+    )
+
+
+def test_entries_match_sample_content():
+    """Verify each entry in clean.json matches corresponding sample.log entry."""
+    expected = parse_sample_log()
+    with open("clean.json") as f:
+        actual = json.load(f)
+    for e, a in zip(expected, actual):
+        assert e["timestamp"] == a["timestamp"], "Timestamps do not match"
+        assert e["level"] == a["level"], "Levels do not match"
+        assert e["message"] == a["message"], "Messages do not match"
